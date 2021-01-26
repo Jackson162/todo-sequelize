@@ -4,6 +4,10 @@ const bodyParser = require('body-parser')
 const methodOverride = require('method-override')
 const bcrypt = require('bcryptjs')
 const session = require('express-session')
+// 載入設定檔，要寫在 express-session 以後
+const usePassport = require('./config/passport')
+// 引用 passport，放在文件上方
+const passport = require('passport')
 
 const db = require('./models') //'./models/index.js'
 const Todo = db.Todo
@@ -21,6 +25,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }))
+usePassport(app)
 
 
 app.get('/', (req, res) => {
@@ -43,9 +48,10 @@ app.get('/users/login', (req, res) => {
   res.render('login')
 })
 
-app.post('/users/login', (req, res) => {
-  res.send('login')
-})
+app.post('/users/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/users/login'
+}))
 
 app.get('/users/register', (req, res) => {
   res.render('register')

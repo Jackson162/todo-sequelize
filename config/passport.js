@@ -7,14 +7,15 @@ module.exports = app => {
   app.use(passport.initialize())
   app.use(passport.session())
   passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
+    const userInput = { email, password }
     User.findOne({ where: { email } })
       .then(user => {
         if (!user) {
-          return done(null, false, { message: 'That email is not registered!' })
+          return done(null, false, { login_error: 'This email does not exist.', userInput })
         }
         return bcrypt.compare(password, user.password).then(isMatch => {
           if (!isMatch) {
-            return done(null, false, { message: 'Email or Password incorrect.' })
+            return done(null, false, { login_error: 'incorrect email or password', userInput })
           }
           return done(null, user)
         })
